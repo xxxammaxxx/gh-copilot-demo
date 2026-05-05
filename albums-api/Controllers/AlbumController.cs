@@ -21,11 +21,18 @@ namespace albums_api.Controllers
             return Ok(albums);
         }
 
-        // GET api/<AlbumController>/5
-        [HttpGet("{id}")]
-        public IActionResult Get(int id)
+        // GET: albums/sorted?sortBy=title|artist|price
+        [HttpGet("sorted")]
+        public IActionResult GetSorted([FromQuery] string sortBy = "title")
         {
-            return Ok();
+            var albums = Album.GetAll();
+            List<Album> sortedAlbums = sortBy.ToLower() switch
+            {
+                "artist" => albums.OrderBy(a => a.Artist).ToList(),
+                "price" => albums.OrderBy(a => a.Price).ToList(),
+                _ => albums.OrderBy(a => a.Title).ToList(),
+            };
+            return Ok(sortedAlbums);
         }
 
     }
