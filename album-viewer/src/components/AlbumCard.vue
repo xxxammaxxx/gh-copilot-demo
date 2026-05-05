@@ -21,7 +21,7 @@
     </div>
     
     <div class="album-actions">
-      <button class="btn btn-primary" @click="emit('add-to-cart', album)">Add to Cart</button>
+      <button class="btn btn-primary" :disabled="inCart" :class="{ 'btn-in-cart': inCart }" @click="!inCart && emit('add-to-cart', album)">{{ inCart ? '✓ In Cart' : 'Add to Cart' }}</button>
       <button class="btn btn-secondary">Preview</button>
     </div>
   </div>
@@ -32,6 +32,7 @@ import type { Album } from '../types/album'
 
 interface Props {
   album: Album
+  inCart?: boolean
 }
 
 defineProps<Props>()
@@ -163,9 +164,20 @@ const handleImageError = (event: Event): void => {
   color: white;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   background: #5a6fd8;
   transform: translateY(-2px);
+}
+
+.btn-in-cart {
+  background: #48bb78;
+  cursor: default;
+  opacity: 0.85;
+}
+
+.btn-in-cart:hover {
+  background: #48bb78;
+  transform: none;
 }
 
 .btn-secondary {

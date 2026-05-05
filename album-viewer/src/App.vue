@@ -47,6 +47,7 @@
           v-for="album in albums" 
           :key="album.id" 
           :album="album"
+          :in-cart="isInCart(album)"
           @add-to-cart="addToCart"
         />
       </div>
@@ -69,8 +70,12 @@ const cartOpen = ref<boolean>(false)
 const cartTotal = computed(() => cart.value.reduce((sum, a) => sum + a.price, 0))
 
 const addToCart = (album: Album): void => {
-  cart.value.push(album)
+  if (!cart.value.some(a => a.id === album.id)) {
+    cart.value.push(album)
+  }
 }
+
+const isInCart = (album: Album): boolean => cart.value.some(a => a.id === album.id)
 
 const fetchAlbums = async (): Promise<void> => {
   try {
