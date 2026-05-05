@@ -21,7 +21,7 @@
     </div>
     
     <div class="album-actions">
-      <button class="btn btn-primary">Add to Cart</button>
+      <button class="btn btn-primary" @click="emit('add-to-cart', album)">Add to Cart</button>
       <button class="btn btn-secondary">Preview</button>
     </div>
   </div>
@@ -35,6 +35,7 @@ interface Props {
 }
 
 defineProps<Props>()
+const emit = defineEmits<{ 'add-to-cart': [album: Album] }>()
 
 const handleImageError = (event: Event): void => {
   const target = event.target as HTMLImageElement

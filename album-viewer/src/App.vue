@@ -1,9 +1,35 @@
 <template>
   <div class="app">
     <header class="header">
-      <h1>🎵 Album Collection</h1>
-      <p>Discover amazing music albums</p>
+      <div class="header-content">
+        <div>
+          <h1>🎵 Album Collection</h1>
+          <p>Discover amazing music albums</p>
+        </div>
+        <button class="cart-btn" aria-label="Cart" @click="cartOpen = !cartOpen">
+          🛒 Cart
+          <span v-if="cart.length" class="cart-count">{{ cart.length }}</span>
+        </button>
+      </div>
     </header>
+
+    <!-- Cart sidebar -->
+    <div v-if="cartOpen" class="cart-sidebar" data-testid="cart-sidebar">
+      <div class="cart-header">
+        <h2>Your Cart</h2>
+        <button class="close-btn" @click="cartOpen = false">✕</button>
+      </div>
+      <div v-if="cart.length === 0" class="cart-empty">Your cart is empty.</div>
+      <ul v-else class="cart-items">
+        <li v-for="item in cart" :key="item.id" class="cart-item" :data-testid="'cart-item-' + item.id">
+          <span class="cart-item-title">{{ item.title }}</span>
+          <span class="cart-item-price">${{ item.price.toFixed(2) }}</span>
+        </li>
+      </ul>
+      <div v-if="cart.length" class="cart-total">
+        Total: ${{ cartTotal.toFixed(2) }}
+      </div>
+    </div>
 
     <main class="main">
       <div v-if="loading" class="loading">
@@ -20,7 +46,8 @@
         <AlbumCard 
           v-for="album in albums" 
           :key="album.id" 
-          :album="album" 
+          :album="album"
+          @add-to-cart="addToCart"
         />
       </div>
     </main>
@@ -28,7 +55,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import AlbumCard from './components/AlbumCard.vue'
 import type { Album } from './types/album'
@@ -36,6 +63,14 @@ import type { Album } from './types/album'
 const albums = ref<Album[]>([])
 const loading = ref<boolean>(true)
 const error = ref<string | null>(null)
+const cart = ref<Album[]>([])
+const cartOpen = ref<boolean>(false)
+
+const cartTotal = computed(() => cart.value.reduce((sum, a) => sum + a.price, 0))
+
+const addToCart = (album: Album): void => {
+  cart.value.push(album)
+}
 
 const fetchAlbums = async (): Promise<void> => {
   try {
@@ -68,15 +103,122 @@ onMounted(() => {
   color: white;
 }
 
-.header h1 {
-  font-size: 3rem;
-  margin-bottom: 0.5rem;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.header p {
-  font-size: 1.2rem;
-  opacity: 0.9;
+.cart-btn {
+  position: relative;
+  background: rgba(255,255,255,0.2);
+  border: 2px solid white;
+  color: white;
+  font-size: 1.1rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cart-btn:hover {
+  background: rgba(255,255,255,0.35);
+}
+
+.cart-count {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #e74c3c;
+  color: white;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.cart-sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 340px;
+  height: 100vh;
+  background: white;
+  box-shadow: -4px 0 20px rgba(0,0,0,0.2);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.cart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.8rem;
+}
+
+.cart-header h2 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  color: #555;
+}
+
+.cart-empty {
+  color: #999;
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.cart-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex: 1;
+}
+
+.cart-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.95rem;
+}
+
+.cart-item-title {
+  font-weight: 500;
+  color: #333;
+}
+
+.cart-item-price {
+  color: #667eea;
+  font-weight: bold;
+}
+
+.cart-total {
+  margin-top: 1rem;
+  padding-top: 0.8rem;
+  border-top: 2px solid #667eea;
+  font-size: 1.1rem;
+  font-weight: bold;
+  text-align: right;
+  color: #333;
 }
 
 .main {
