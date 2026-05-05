@@ -21,7 +21,7 @@
     </div>
     
     <div class="album-actions">
-      <button class="btn btn-primary" :disabled="inCart" :class="{ 'btn-in-cart': inCart }" @click="!inCart && emit('add-to-cart', album)">{{ inCart ? '✓ In Cart' : 'Add to Cart' }}</button>
+      <button class="btn btn-primary" @click="emit('add-to-cart', album)">Add to Cart</button>
       <button class="btn btn-secondary">Preview</button>
     </div>
   </div>

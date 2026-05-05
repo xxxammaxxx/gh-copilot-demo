@@ -8,7 +8,7 @@
         </div>
         <button class="cart-btn" aria-label="Cart" @click="cartOpen = !cartOpen">
           🛒 Cart
-          <span v-if="cart.length" class="cart-count">{{ cart.length }}</span>
+          <span v-if="totalItems" class="cart-count">{{ totalItems }}</span>
         </button>
       </div>
     </header>
@@ -21,9 +21,13 @@
       </div>
       <div v-if="cart.length === 0" class="cart-empty">Your cart is empty.</div>
       <ul v-else class="cart-items">
-        <li v-for="item in cart" :key="item.id" class="cart-item" :data-testid="'cart-item-' + item.id">
-          <span class="cart-item-title">{{ item.title }}</span>
-          <span class="cart-item-price">${{ item.price.toFixed(2) }}</span>
+        <li v-for="item in cart" :key="item.album.id" class="cart-item" :data-testid="'cart-item-' + item.album.id">
+          <span class="cart-item-title">{{ item.album.title }}</span>
+          <div class="cart-item-right">
+            <span class="cart-item-qty">x{{ item.quantity }}</span>
+            <span class="cart-item-price">${{ (item.album.price * item.quantity).toFixed(2) }}</span>
+            <button class="remove-btn" @click="removeFromCart(item.album.id)">✕</button>
+          </div>
         </li>
       </ul>
       <div v-if="cart.length" class="cart-total">
@@ -61,21 +65,34 @@ import axios from 'axios'
 import AlbumCard from './components/AlbumCard.vue'
 import type { Album } from './types/album'
 
+interface CartItem {
+  album: Album
+  quantity: number
+}
+
 const albums = ref<Album[]>([])
 const loading = ref<boolean>(true)
 const error = ref<string | null>(null)
-const cart = ref<Album[]>([])
+const cart = ref<CartItem[]>([])
 const cartOpen = ref<boolean>(false)
 
-const cartTotal = computed(() => cart.value.reduce((sum, a) => sum + a.price, 0))
+const totalItems = computed(() => cart.value.reduce((sum, i) => sum + i.quantity, 0))
+const cartTotal = computed(() => cart.value.reduce((sum, i) => sum + i.album.price * i.quantity, 0))
 
 const addToCart = (album: Album): void => {
-  if (!cart.value.some(a => a.id === album.id)) {
-    cart.value.push(album)
+  const existing = cart.value.find(i => i.album.id === album.id)
+  if (existing) {
+    existing.quantity++
+  } else {
+    cart.value.push({ album, quantity: 1 })
   }
 }
 
-const isInCart = (album: Album): boolean => cart.value.some(a => a.id === album.id)
+const removeFromCart = (albumId: number): void => {
+  cart.value = cart.value.filter(i => i.album.id !== albumId)
+}
+
+const isInCart = (album: Album): boolean => cart.value.some(i => i.album.id === album.id)
 
 const fetchAlbums = async (): Promise<void> => {
   try {
@@ -201,9 +218,31 @@ onMounted(() => {
 .cart-item {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: 0.75rem 0;
   border-bottom: 1px solid #f0f0f0;
   font-size: 0.95rem;
+}
+
+.cart-item-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cart-item-qty {
+  color: #888;
+  font-size: 0.85rem;
+}
+
+.remove-btn {
+  background: none;
+  border: none;
+  color: #e74c3c;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0 0.2rem;
+  line-height: 1;
 }
 
 .cart-item-title {
