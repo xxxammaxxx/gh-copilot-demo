@@ -24,7 +24,11 @@
         <li v-for="item in cart" :key="item.album.id" class="cart-item" :data-testid="'cart-item-' + item.album.id">
           <span class="cart-item-title">{{ item.album.title }}</span>
           <div class="cart-item-right">
-            <span class="cart-item-qty">x{{ item.quantity }}</span>
+            <div class="qty-stepper">
+              <button class="qty-btn" @click="decrementCart(item.album.id)">−</button>
+              <span class="cart-item-qty">{{ item.quantity }}</span>
+              <button class="qty-btn" @click="addToCart(item.album)">+</button>
+            </div>
             <span class="cart-item-price">${{ (item.album.price * item.quantity).toFixed(2) }}</span>
             <button class="remove-btn" @click="removeFromCart(item.album.id)">✕</button>
           </div>
@@ -90,6 +94,16 @@ const addToCart = (album: Album): void => {
 
 const removeFromCart = (albumId: number): void => {
   cart.value = cart.value.filter(i => i.album.id !== albumId)
+}
+
+const decrementCart = (albumId: number): void => {
+  const item = cart.value.find(i => i.album.id === albumId)
+  if (!item) return
+  if (item.quantity > 1) {
+    item.quantity--
+  } else {
+    removeFromCart(albumId)
+  }
 }
 
 const isInCart = (album: Album): boolean => cart.value.some(i => i.album.id === album.id)
@@ -228,6 +242,30 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+.qty-stepper {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: #f5f5f5;
+  border-radius: 20px;
+  padding: 0.15rem 0.4rem;
+}
+
+.qty-btn {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  color: #667eea;
+  line-height: 1;
+  padding: 0 0.2rem;
+}
+
+.qty-btn:hover {
+  color: #5a6fd8;
 }
 
 .cart-item-qty {
