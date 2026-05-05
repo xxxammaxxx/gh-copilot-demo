@@ -13,6 +13,9 @@
       </div>
     </header>
 
+    <!-- Cart backdrop -->
+    <div v-if="cartOpen" class="cart-backdrop" @click="cartOpen = false" />
+
     <!-- Cart sidebar -->
     <div v-if="cartOpen" class="cart-sidebar" data-testid="cart-sidebar">
       <div class="cart-header">
@@ -177,6 +180,13 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   font-weight: bold;
+}
+
+.cart-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(0, 0, 0, 0.3);
 }
 
 .cart-sidebar {
